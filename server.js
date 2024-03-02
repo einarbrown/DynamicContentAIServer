@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { OpenAI } = require('openai');
-//const fs = require("fs/promises");
 const { transparentBackground } = require("transparent-background");
 
 const app = express();
@@ -56,9 +55,6 @@ app.get('/getGameContext', async (req, res) => {
         res.status(500).send('Ett fel inträffade vid anrop till OpenAI');
     }
 });
-
-
-
 
 app.get('/getBackground', async (req, res) => {
     const environment = req.query.environment; // Ta emot miljön som en query parameter
@@ -153,4 +149,3 @@ function extractAndParseJson(inputString) {
 
 const port = process.env.PORT || 3000; // Använd miljövariabeln PORT, eller 3000 om PORT inte är definierad
 app.listen(port, () => console.log(`Server körs på port ${port}`));
-//app.listen(3000, () => console.log('Server körs på port 3000'));
