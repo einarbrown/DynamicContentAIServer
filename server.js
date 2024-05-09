@@ -2,12 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { OpenAI } = require('openai');
-const { transparentBackground } = require("transparent-background");
+
+const path = require('path');
 
 const app = express();
 app.use(cors());
-const apiKey = process.env.AI_API_KEY;
-
+const apiKey = process.env.AI_API_KEY ;
+const removeBgCode = process.env.REMOVE_BG_CODE ;
 
 const openai = new OpenAI({
     apiKey: apiKey,
@@ -44,8 +45,6 @@ app.get('/getGameContext', async (req, res) => {
         });
 
         const textResponse = response.choices[0].message.content.trim();
-        console.log('response: ' + textResponse)
-        //const parsedResponse = parseResponse(textResponse, environment);
         parsedResponse = extractAndParseJson(textResponse);
         //const parsedResponse = {introText:"Livliga träd och vild vilda djur.",Enemy:"Orm, giftig och snabb.",Hero:"Gorilla, stark och beskyddande.",Victim:"Fågel, sårbar och vacker."}
 
@@ -101,25 +100,28 @@ app.get('/getSprite', async (req, res) => {
             size: "1024x1024"
           });
 
-                // Hämta bilden baserat på URL:en från OpenAI's svar
-                const imageUrl = response.data[0].url; // Antagande: svaret innehåller en bild-URL
-                const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        // Hämta bilden baserat på URL:en från OpenAI's svar
+        const imageUrl = response.data[0].url; // Antagande: svaret innehåller en bild-URL
+        const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
 
-                //Ta bort backgrund
-                const imageResponseNoBgr = await transparentBackground(imageResponse.data, "png", {
-                    // uses a 1024x1024 model by default 
-                    // enabling fast uses a 384x384 model instead
-                    fast: false,
-                });
+        //Ta bort backgrund
+        const bgRemovalResponse = await axios.post(`https://removebgnow.azurewebsites.net/api/http_trigger?code=${removeBgCode}`, imageResponse.data,{
+            headers: {
+                'Content-Type': 'image/png'
+            },
+            responseType: 'arraybuffer'
+        });
 
-                // Sätt rätt innehållstyp för bilden
-                res.setHeader('Content-Type', 'image/png'); // Antagande: bilden är i PNG-format
-        
-                // Skicka bildens innehåll som respons
-                res.send(imageResponseNoBgr)
-                //res.send(imageResponse.data);
+        // Sätt rätt innehållstyp för bilden
+        res.setHeader('Content-Type', 'image/png'); // Antagande: bilden är i PNG-format
+
+        // Skicka bildens innehåll som respons
+        res.send(bgRemovalResponse.data)
+        //res.send(imageResponse.data);
     } catch (error) {
         console.error('Failed to generate image:', error);
+        if (error.message) console.error('Error message:', error.message);
+        if (error.stack) console.error('Error stack trace:', error.stack);
         res.status(500).send('Failed to generate image');
     }
 });
