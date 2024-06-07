@@ -1,0 +1,81 @@
+# # Välj en basbild med Python 3.8
+# FROM python:3.8-slim
+
+# # Installera curl och gnupg för att lägga till NodeSource's repo och sedan Node.js
+# RUN apt-get update && \
+#     apt-get install -y curl gnupg && \
+#     curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+#     apt-get install -y nodejs
+
+# # Felsökning: Explicit installera npm om det behövs (detta bör inte vara nödvändigt)
+# RUN apt-get install -y npm
+
+# # Efter att ha installerat Python och Node.js
+# RUN pip install tensorflow
+
+# # Kontrollera Python- och Node.js-versionerna
+# RUN python --version
+# RUN node --version
+# RUN npm --version
+
+# # Ställ in arbetskatalogen i containern
+# WORKDIR /app
+# RUN chmod 777 /app
+
+# # Ändra skrivrättigheter för /tmp katalogen
+# RUN chmod -R 777 /tmp
+
+# # Definiera TMPDIR-miljövariabeln
+# ENV TMPDIR=/tmp
+
+# # Kopiera ditt projekt till containern
+# COPY . .
+
+# # Installera projektberoenden
+# RUN npm install
+# # Om ditt projekt behöver Python-paket, använd pip här:
+# # RUN pip install -r requirements.txt
+
+# # Kör din applikation
+# CMD ["node", "server.js"]
+
+
+# Använd en basimage som har Windows och är kompatibel med både Node.js och Python.
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+# Ange metadata om vem som har skapat Dockerfile
+LABEL maintainer="example@example.com"
+
+# Installera Node.js
+# ADD https://nodejs.org/dist/v14.17.0/node-v14.17.0-x64.msi C:\\temp\\node-install.msi
+ADD https://nodejs.org/dist/v21.7.2/node-v21.7.2-x64.msi C:\\temp\\node-install.msi
+RUN start /wait msiexec.exe /i C:\\temp\\node-install.msi /quiet /qn ADDLOCAL=ALL
+#RUN del C:\\temp\\node-install.msi
+
+# Installera Python
+# ADD https://www.python.org/ftp/python/3.9.5/python-3.9.5-amd64.exe C:\\temp\\python-install.exe
+ADD https://www.python.org/ftp/python/3.9.9/python-3.9.9-amd64.exe C:\\temp\\python-install.exe
+RUN start /wait C:\\temp\\python-install.exe /quiet InstallAllUsers=1 PrependPath=1
+#RUN del C:\\temp\\python-install.exe
+
+# Skapa en katalog för din app
+WORKDIR /app
+
+# Kopiera applikationskoden till containern
+COPY . /app
+
+
+# # Kontrollera Python- och Node.js-versionerna
+RUN python --version
+RUN node --version
+RUN npm --version
+
+# Installera applikationens beroenden
+RUN npm install
+
+# Exponera den port som din app kör på
+EXPOSE 3000
+
+# Startkommando för din applikation
+CMD ["node", "server.js"]
+

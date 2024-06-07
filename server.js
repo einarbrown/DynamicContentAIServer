@@ -8,7 +8,6 @@ const path = require('path');
 const app = express();
 app.use(cors());
 const apiKey = process.env.AI_API_KEY ;
-const removeBgCode = process.env.REMOVE_BG_CODE ;
 
 const openai = new OpenAI({
     apiKey: apiKey,
@@ -105,7 +104,7 @@ app.get('/getSprite', async (req, res) => {
         const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
 
         //Ta bort backgrund
-        const bgRemovalResponse = await axios.post(`https://removebgnow.azurewebsites.net/api/http_trigger?code=${removeBgCode}`, imageResponse.data,{
+        const bgRemovalResponse = await axios.post(`https://removebackgroundnow.azurewebsites.net/removeBG`, imageResponse.data,{
             headers: {
                 'Content-Type': 'image/png'
             },
