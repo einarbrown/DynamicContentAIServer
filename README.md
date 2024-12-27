@@ -11,4 +11,4 @@ Returns game data in JSON format based on the environment (e.g., "forest") provi
 Returns an image as a background based on the environment (e.g., "forest") provided.
 
 ### `getSprite`
-Returns an image for a sprite in the game based on the description provided. For example, "panda, clever and sly".
+Returns an image for a sprite in the game based on the description provided. For example, "panda, clever and shy".
